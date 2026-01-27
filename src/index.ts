@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 import { Command } from 'commander';
 import { loginCommand } from './commands/login.js';
 import { statusCommand } from './commands/status.js';
