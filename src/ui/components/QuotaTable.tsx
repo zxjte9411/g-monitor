@@ -14,16 +14,28 @@ export interface QuotaData {
 interface Props {
     data: QuotaData[];
     filter: 'all' | 'prod' | 'daily';
+    scrollOffset?: number;
+    maxHeight?: number;
 }
 
-export const QuotaTable: React.FC<Props> = ({ data, filter }) => {
+export const QuotaTable: React.FC<Props> = ({ data, filter, scrollOffset = 0, maxHeight = 15 }) => {
     const filteredData = data.filter(item => {
         if (filter === 'all') return true;
         return item.source.toLowerCase() === filter;
     });
 
+    const visibleData = filteredData.slice(scrollOffset, scrollOffset + maxHeight);
+    const hasMoreAbove = scrollOffset > 0;
+    const hasMoreBelow = scrollOffset + maxHeight < filteredData.length;
+
     return (
         <Box flexDirection="column" paddingX={1}>
+            {hasMoreAbove && (
+                <Box justifyContent="center">
+                    <Text dimColor>▲</Text>
+                </Box>
+            )}
+
             <Box flexDirection="row" borderStyle="single" borderColor="gray" paddingX={1}>
                 <Box flexBasis="50%">
                     <Text bold>Name</Text>
@@ -41,7 +53,7 @@ export const QuotaTable: React.FC<Props> = ({ data, filter }) => {
                     <Text dimColor>No quota data available</Text>
                 </Box>
             ) : (
-                filteredData.map((item, index) => {
+                visibleData.map((item, index) => {
                     const percentage = (item.remaining / item.limit) * 100;
                     let color = 'green';
                     if (percentage < 20) color = 'red';
@@ -67,6 +79,12 @@ export const QuotaTable: React.FC<Props> = ({ data, filter }) => {
                         </Box>
                     );
                 })
+            )}
+
+            {hasMoreBelow && (
+                <Box justifyContent="center">
+                    <Text dimColor>▼</Text>
+                </Box>
             )}
         </Box>
     );
