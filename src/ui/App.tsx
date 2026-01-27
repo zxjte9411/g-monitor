@@ -28,7 +28,12 @@ export const App: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
     const [filter, setFilter] = useState<'all' | 'prod' | 'daily'>('all');
+    const [scrollOffset, setScrollOffset] = useState(0);
     const [refreshInterval] = useState(60);
+
+    useEffect(() => {
+        setScrollOffset(0);
+    }, [filter]);
     const [lastUpdated, setLastUpdated] = useState(new Date());
     const [error, setError] = useState<string | null>(null);
 
@@ -92,6 +97,19 @@ export const App: React.FC = () => {
         }
         if (input === 's') {
             setShowAccountSwitcher(current => !current);
+        }
+
+        const filteredDataLength = transformData().filter(item => {
+            if (filter === 'all') return true;
+            return item.source.toLowerCase() === filter;
+        }).length;
+        const maxOffset = Math.max(0, filteredDataLength - 15);
+
+        if (key.downArrow) {
+            setScrollOffset(prev => Math.min(maxOffset, prev + 1));
+        }
+        if (key.upArrow) {
+            setScrollOffset(prev => Math.max(0, prev - 1));
         }
     });
 
@@ -171,7 +189,12 @@ export const App: React.FC = () => {
                         </Text>
                     </Box>
                 ) : (
-                    <QuotaTable data={transformData()} filter={filter} />
+                    <QuotaTable 
+                        data={transformData()} 
+                        filter={filter} 
+                        scrollOffset={scrollOffset} 
+                        maxHeight={15} 
+                    />
                 )}
             </Box>
 
