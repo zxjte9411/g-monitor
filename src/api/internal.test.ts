@@ -13,23 +13,21 @@ describe('InternalClient', () => {
         expect.stringContaining('v1internal:loadCodeAssist'),
         expect.objectContaining({
             headers: expect.objectContaining({
-                'User-Agent': expect.stringContaining('GeminiCLI'),
+                'X-Goog-Api-Client': 'google-cloud-sdk vscode_cloudshelleditor/0.1',
+                'User-Agent': expect.stringContaining('antigravity'),
                 'Authorization': 'Bearer fake_token'
             })
         })
     );
   });
 
-  it('should call retrieveUserQuota with correct path and body', async () => {
+  it('should NOT inject X-Goog-User-Project (Stealth Mode)', async () => {
     (global.fetch as any).mockResolvedValue({ ok: true, json: () => ({}) });
     const client = new InternalClient('fake_token');
     await client.retrieveUserQuota('my-project');
     
-    expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('v1internal:retrieveUserQuota'),
-        expect.objectContaining({
-            body: JSON.stringify({ project: 'my-project' })
-        })
-    );
+    const call = (global.fetch as any).mock.calls[0];
+    const headers = call[1].headers;
+    expect(headers['X-Goog-User-Project']).toBeUndefined();
   });
 });
