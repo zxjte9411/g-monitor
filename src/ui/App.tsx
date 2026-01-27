@@ -135,6 +135,12 @@ export const App: React.FC = () => {
         const quotaItems: QuotaData[] = [];
         data.forEach(res => {
             if (res.data?.buckets) {
+                const identityMap: Record<string, string> = {
+                    'antigravity': 'VSCode',
+                    'gemini-cli': 'CLI'
+                };
+                const poolLabel = `(${res.source}/${identityMap[res.identity] || res.identity})`;
+
                 res.data.buckets.forEach(bucket => {
                     if (!bucket.modelId) return;
                     
@@ -146,7 +152,7 @@ export const App: React.FC = () => {
                     if (bucket.modelId === 'gemini-3-flash') displayName = 'Gemini 3 Flash Preview';
 
                     quotaItems.push({
-                        name: displayName,
+                        name: `${displayName} (${poolLabel})`,
                         remaining: Math.round(bucket.remainingFraction * 100),
                         limit: 100,
                         resetTime: bucket.resetTime,

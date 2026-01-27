@@ -118,10 +118,17 @@ async function processAccountStatus(account: any, options: any) {
             if ((res as any).data?.buckets) {
                 const buckets = (res as any).data.buckets;
                 const source = (res as any).source;
+                const identity = (res as any).identity;
 
                 // Apply filters if specified
                 if (options.prod && source !== 'Prod') continue;
                 if (options.daily && source !== 'Daily') continue;
+
+                const identityMap: Record<string, string> = {
+                    'antigravity': 'VSCode',
+                    'gemini-cli': 'CLI'
+                };
+                const poolLabel = `(${source}/${identityMap[identity] || identity})`;
 
                 for (const bucket of buckets) {
                     if (!bucket.modelId) continue;
@@ -129,7 +136,7 @@ async function processAccountStatus(account: any, options: any) {
                     const id = bucket.modelId;
                     const existing = modelMap.get(id);
                     
-                    const uniqueKey = `${id}|${source}`;
+                    const uniqueKey = `${id}|${source}|${identity}`;
                     
                     let displayName = existing?.displayName || id;
                     if (id === 'gemini-3-pro-high') displayName = 'Gemini 3 Pro (High)';
@@ -138,7 +145,7 @@ async function processAccountStatus(account: any, options: any) {
 
                     modelMap.set(uniqueKey, {
                         id,
-                        displayName: `${displayName} ${chalk.dim(`(${source})`)}`,
+                        displayName: `${displayName} ${chalk.dim(poolLabel)}`,
                         remainingFraction: bucket.remainingFraction,
                         resetTime: bucket.resetTime
                     });
