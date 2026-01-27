@@ -155,9 +155,9 @@ export const App: React.FC = () => {
                     let displayName = modelMap.get(bucket.modelId)?.displayName || bucket.modelId;
                     
                     // Special case overrides from status.ts
-                    if (bucket.modelId === 'gemini-3-pro-high') displayName = 'Gemini 3 Pro Preview (High)';
-                    if (bucket.modelId === 'gemini-3-pro-low') displayName = 'Gemini 3 Pro Preview (Low)';
-                    if (bucket.modelId === 'gemini-3-flash') displayName = 'Gemini 3 Flash Preview';
+                    if (bucket.modelId === 'gemini-3-pro-high') displayName = 'Gemini 3 Pro (High)';
+                    if (bucket.modelId === 'gemini-3-pro-low') displayName = 'Gemini 3 Pro (Low)';
+                    if (bucket.modelId === 'gemini-3-flash') displayName = 'Gemini 3 Flash';
 
                     quotaItems.push({
                         name: `${displayName} [${poolLabel}]`,
