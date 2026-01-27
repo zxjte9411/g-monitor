@@ -228,7 +228,7 @@ export const App: React.FC = () => {
                 )}
             </Box>
 
-            <Footer />
+            <Footer sortMode={sortMode} />
         </Box>
     );
 };
