@@ -3,17 +3,12 @@ export class InternalClient {
     
     constructor(private accessToken: string) {}
 
-    private async request(path: string, body: any = {}, options: { projectId?: string } = {}) {
+    private async request(path: string, body: any = {}) {
         const headers: Record<string, string> = {
             'Authorization': `Bearer ${this.accessToken}`,
             'Content-Type': 'application/json',
-            'X-Goog-Api-Client': 'google-cloud-sdk vscode_cloudshelleditor/0.1',
             'User-Agent': `GeminiCLI/1.3.6 (win32; x64)`
         };
-
-        if (options.projectId) {
-            headers['X-Goog-User-Project'] = options.projectId;
-        }
 
         const res = await fetch(`${this.baseUrl}${path}`, {
             method: 'POST',
@@ -36,11 +31,11 @@ export class InternalClient {
     }
 
     async fetchAvailableModels(projectId?: string) {
-        return this.request('/v1internal:fetchAvailableModels', projectId ? { project: projectId } : {}, { projectId });
+        return this.request('/v1internal:fetchAvailableModels', projectId ? { project: projectId } : {});
     }
 
     async retrieveUserQuota(projectId: string) {
-        return this.request('/v1internal:retrieveUserQuota', { project: projectId }, { projectId });
+        return this.request('/v1internal:retrieveUserQuota', { project: projectId });
     }
 
     async onboardUser(tierId: string, projectId?: string) {
@@ -48,6 +43,6 @@ export class InternalClient {
             tierId,
             cloudaicompanionProject: projectId,
             metadata: { ideType: 'IDE_UNSPECIFIED', pluginType: 'GEMINI' }
-        }, { projectId });
+        });
     }
 }
