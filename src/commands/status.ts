@@ -125,10 +125,10 @@ async function processAccountStatus(account: any, options: any) {
                 if (options.daily && source !== 'Daily') continue;
 
                 const identityMap: Record<string, string> = {
-                    'antigravity': 'VSCode',
+                    'antigravity': 'Antigravity',
                     'gemini-cli': 'CLI'
                 };
-                const poolLabel = `(${source}/${identityMap[identity] || identity})`;
+                const poolLabel = `${source}/${identityMap[identity] || identity}`;
 
                 for (const bucket of buckets) {
                     if (!bucket.modelId) continue;
@@ -145,7 +145,7 @@ async function processAccountStatus(account: any, options: any) {
 
                     modelMap.set(uniqueKey, {
                         id,
-                        displayName: `${displayName} ${chalk.dim(poolLabel)}`,
+                        displayName: `${displayName} ${chalk.dim(`[${poolLabel}]`)}`,
                         remainingFraction: bucket.remainingFraction,
                         resetTime: bucket.resetTime
                     });
