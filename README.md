@@ -2,6 +2,12 @@
 
 `g-monitor` 是一個專為開發者設計的 Google AI 模型配額監控 CLI 工具。它結合了 VS Code Cloud Code Assist 與 Gemini CLI 的特性，讓您能一鍵掌握所有 Google 內部模型（包含 Preview 版本）的配額狀態。
 
+> ⚠️ **免責聲明 (Disclaimer)**
+>
+> 本專案僅供**學術研究與教育用途**。它不隸屬於 Google，也未獲得 Google 的認可或贊助。使用本工具涉及存取未公開的內部 API，這可能違反 Google 的服務條款 (Terms of Service)。
+>
+> **使用本工具的風險由您自行承擔。** Google 可能會隨時更改 API、撤銷憑證，或對異常流量的帳號採取限制措施。建議僅使用測試帳號進行操作，並避免用於大規模生產環境。
+
 ## 🎯 撰寫目的
 在進行跨平台開發或測試 Gemini Preview 模型時，各個環境（如 VS Code、Cloud Shell、Gemini CLI）的配額往往是分開計算且重置時間不一的。開發者經常遇到「此環境配額已滿」卻不清楚何時恢復的情況。`g-monitor` 的誕生是為了打破資訊孤島，提供一個統一、透明且易讀的監控介面。
 
@@ -81,4 +87,3 @@ g-monitor status --tui
 - **Model Name (Pool)**：模型名稱與所屬配額池（如 `[Prod/Antigravity]`）。
 - **Remaining %**：剩餘百分比（0% 顯示紅色，<10% 顯示黃色）。支援 Bar 模式顯示進度條。
 - **Reset Time**：人類易讀的重置倒數（如 `(Resets in 2h 15m)`）。
-
