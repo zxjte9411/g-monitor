@@ -17,11 +17,23 @@ export interface QuotaData {
 interface Props {
     data: QuotaData[];
     filter: 'all' | 'prod' | 'daily';
+    viewMode?: 'percent' | 'bar';
     scrollOffset?: number;
     maxHeight?: number;
 }
 
-export const QuotaTable: React.FC<Props> = ({ data, filter, scrollOffset = 0, maxHeight = 15 }) => {
+export const QuotaTable: React.FC<Props> = ({ data, filter, viewMode = 'percent', scrollOffset = 0, maxHeight = 15 }) => {
+    const renderProgressBar = (percentage: number, color: string) => {
+        const width = 10;
+        const filledChars = Math.round((percentage / 100) * width);
+        const emptyChars = width - filledChars;
+        return (
+            <Text color={color}>
+                {'█'.repeat(filledChars)}{'░'.repeat(emptyChars)}
+            </Text>
+        );
+    };
+
     const filteredData = data.filter(item => {
         if (filter === 'all') return true;
         return item.source.toLowerCase() === filter;
@@ -70,9 +82,13 @@ export const QuotaTable: React.FC<Props> = ({ data, filter, scrollOffset = 0, ma
                                 </Text>
                             </Box>
                             <Box flexBasis="25%">
-                                <Text color={color}>
-                                    {item.remaining} / {item.limit}
-                                </Text>
+                                {viewMode === 'bar' ? (
+                                    renderProgressBar(percentage, color)
+                                ) : (
+                                    <Text color={color}>
+                                        {item.remaining} / {item.limit}
+                                    </Text>
+                                )}
                             </Box>
                             <Box flexBasis="25%">
                                 <Text dimColor>

@@ -27,6 +27,7 @@ export const App: React.FC = () => {
     const [data, setData] = useState<SweepResult[]>([]);
     const [loading, setLoading] = useState(true);
     const [sortMode, setSortMode] = useState<'name' | 'pool' | 'status'>('name');
+    const [viewMode, setViewMode] = useState<'percent' | 'bar'>('percent');
     const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
     const [filter, setFilter] = useState<'all' | 'prod' | 'daily'>('all');
     const [scrollOffset, setScrollOffset] = useState(0);
@@ -105,6 +106,9 @@ export const App: React.FC = () => {
                 if (current === 'pool') return 'status';
                 return 'name';
             });
+        }
+        if (input === 'v') {
+            setViewMode(current => current === 'percent' ? 'bar' : 'percent');
         }
 
         const filteredDataLength = transformData().filter(item => {
@@ -222,13 +226,14 @@ export const App: React.FC = () => {
                     <QuotaTable 
                         data={transformData()} 
                         filter={filter} 
+                        viewMode={viewMode}
                         scrollOffset={scrollOffset} 
                         maxHeight={15} 
                     />
                 )}
             </Box>
 
-            <Footer sortMode={sortMode} />
+            <Footer sortMode={sortMode} viewMode={viewMode} />
         </Box>
     );
 };
