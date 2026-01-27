@@ -4,7 +4,8 @@ const SCOPES = [
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/cclog',
-    'https://www.googleapis.com/auth/experimentsandconfigs'
+    'https://www.googleapis.com/auth/experimentsandconfigs',
+    'openid'
 ];
 
 export function buildAuthUrl(challenge: string, redirectUri: string): string {

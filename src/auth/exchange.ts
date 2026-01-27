@@ -20,11 +20,17 @@ export async function exchangeCode(code: string, verifier: string, redirectUri: 
 
     if (!res.ok) throw new Error(`Token exchange failed: ${await res.text()}`);
     
-    const data = (await res.json()) as { access_token: string; refresh_token: string; expires_in: number };
+    const data = (await res.json()) as { 
+        access_token: string; 
+        refresh_token: string; 
+        expires_in: number;
+        id_token?: string;
+    };
     return {
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
-        expiresAt: Date.now() + data.expires_in * 1000
+        expiresAt: Date.now() + data.expires_in * 1000,
+        idToken: data.id_token
     };
 }
 
@@ -44,10 +50,16 @@ export async function refreshTokens(refreshToken: string) {
 
     if (!res.ok) throw new Error(`Token refresh failed: ${await res.text()}`);
     
-    const data = (await res.json()) as { access_token: string; refresh_token?: string; expires_in: number };
+    const data = (await res.json()) as { 
+        access_token: string; 
+        refresh_token?: string; 
+        expires_in: number;
+        id_token?: string;
+    };
     return {
         accessToken: data.access_token,
         refreshToken: data.refresh_token || refreshToken,
-        expiresAt: Date.now() + data.expires_in * 1000
+        expiresAt: Date.now() + data.expires_in * 1000,
+        idToken: data.id_token
     };
 }
