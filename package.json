@@ -1,6 +1,6 @@
 {
   "name": "@zxjte9411/g-monitor",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "MIT",
   "bin": {
     "g-monitor": "./dist/index.js"
