@@ -1,4 +1,4 @@
-import { formatResetTime } from './formatters.js';
+import { formatResetTime } from '../../src/ui/formatters.js';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 describe('formatResetTime', () => {

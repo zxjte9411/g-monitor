@@ -1,4 +1,4 @@
-import { exchangeCode } from './exchange.js';
+import { exchangeCode } from '../../src/auth/exchange.js';
 import { describe, it, expect, vi } from 'vitest';
 
 global.fetch = vi.fn();

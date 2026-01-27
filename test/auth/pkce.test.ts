@@ -1,4 +1,4 @@
-import { generatePKCE } from './pkce.js';
+import { generatePKCE } from '../../src/auth/pkce.js';
 import { describe, it, expect } from 'vitest';
 
 describe('PKCE', () => {

@@ -1,4 +1,4 @@
-import { buildAuthUrl } from './url.js';
+import { buildAuthUrl } from '../../src/auth/url.js';
 import { describe, it, expect } from 'vitest';
 
 describe('Auth URL', () => {

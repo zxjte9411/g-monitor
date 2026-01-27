@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { decodeJwt } from './jwt.js';
+import { decodeJwt } from '../../src/utils/jwt.js';
 
 describe('JWT Utils', () => {
     it('should decode a valid JWT payload', () => {

@@ -1,4 +1,4 @@
-import { InternalClient } from './internal.js';
+import { InternalClient } from '../../src/api/internal.js';
 import { describe, it, expect, vi } from 'vitest';
 
 global.fetch = vi.fn();

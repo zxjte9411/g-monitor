@@ -1,4 +1,4 @@
-import { ConfigStore } from './config.js'; // Note .js extension for ESM/TS NodeNext
+import { ConfigStore } from '../../src/store/config.js'; // Note .js extension for ESM/TS NodeNext
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock conf

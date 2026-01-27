@@ -1,4 +1,4 @@
-import { startCallbackServer } from './server.js';
+import { startCallbackServer } from '../../src/auth/server.js';
 import { describe, it, expect } from 'vitest';
 import http from 'http';
 
