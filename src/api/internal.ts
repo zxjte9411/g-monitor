@@ -27,4 +27,8 @@ export class InternalClient {
     async fetchAvailableModels(projectId?: string) {
         return this.request('/v1internal:fetchAvailableModels', projectId ? { project: projectId } : {});
     }
+
+    async retrieveUserQuota(projectId: string) {
+        return this.request('/v1internal:retrieveUserQuota', { project: projectId });
+    }
 }
