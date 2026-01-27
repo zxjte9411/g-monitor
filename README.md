@@ -82,5 +82,3 @@ g-monitor status --tui
 - **Remaining %**：剩餘百分比（0% 顯示紅色，<10% 顯示黃色）。支援 Bar 模式顯示進度條。
 - **Reset Time**：人類易讀的重置倒數（如 `(Resets in 2h 15m)`）。
 
----
-*本專案採統一 LF 換行格式與 GPG 安全簽名提交。*
