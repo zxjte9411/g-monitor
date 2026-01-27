@@ -6,6 +6,9 @@ import { refreshTokens } from '../auth/exchange.js';
 import Table from 'cli-table3';
 import ora from 'ora';
 import chalk from 'chalk';
+import React from 'react';
+import { render } from 'ink';
+import { App } from '../ui/App.js';
 
 interface ModelInfo {
     id: string;
@@ -20,7 +23,18 @@ export const statusCommand = new Command('status')
     .option('--prod', 'Show only Production pool')
     .option('--daily', 'Show only Daily Sandbox pool')
     .option('--all', 'Show status for all accounts')
+    .option('--tui', 'Display dashboard in TUI mode')
     .action(async (options) => {
+        if (options.tui) {
+            const account = configStore.getActiveAccount();
+            if (!account) {
+                console.error(chalk.red('No active account found. Run "login" first.'));
+                return;
+            }
+            render(React.createElement(App));
+            return;
+        }
+
         const accounts = options.all 
             ? configStore.getAccounts() 
             : [configStore.getActiveAccount()].filter((a): a is any => !!a);

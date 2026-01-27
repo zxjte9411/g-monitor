@@ -12,9 +12,10 @@
     "@types/bun": "latest",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.0.10",
-    "vitest": "^4.0.18",
+    "@types/react": "^19.2.10",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "chalk": "^5.6.2",
@@ -22,7 +23,12 @@
     "commander": "^14.0.2",
     "conf": "^15.0.2",
     "dotenv": "^17.2.3",
+    "ink": "^6.6.0",
+    "ink-select-input": "^6.2.0",
+    "ink-spinner": "^5.0.0",
+    "ink-text-input": "^6.0.0",
     "open": "^11.0.0",
-    "ora": "^9.1.0"
+    "ora": "^9.1.0",
+    "react": "^19.2.4"
   }
 }
