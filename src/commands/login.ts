@@ -6,6 +6,7 @@ import { buildAuthUrl } from '../auth/url.js';
 import { startCallbackServer } from '../auth/server.js';
 import { exchangeCode } from '../auth/exchange.js';
 import { configStore } from '../store/config.js';
+import { InternalClient } from '../api/internal.js';
 
 export const loginCommand = new Command('login')
   .description('Authenticate with Google')
@@ -42,7 +43,18 @@ export const loginCommand = new Command('login')
       spinner.text = 'Exchanging token...';
       const tokens = await exchangeCode(code, verifier, redirectUri);
       configStore.setTokens(tokens);
-      spinner.succeed('Authentication successful!');
+
+      const client = new InternalClient(tokens.accessToken);
+      spinner.text = 'Discovering project...';
+      const data = await client.loadCodeAssist();
+      const projectId = (data as any).cloudaicompanionProject?.id || (data as any).cloudaicompanionProject; // Handle both string and object
+
+      if (projectId && typeof projectId === 'string') {
+        configStore.setProjectId(projectId);
+        spinner.succeed(`Connected to project: ${projectId}`);
+      } else {
+        spinner.warn('No Code Assist project found. You might need to enable it in the GCP console or wait for onboarding.');
+      }
     } catch (err: any) {
       spinner.fail(`Auth failed: ${err.message}`);
     }
