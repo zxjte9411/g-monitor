@@ -13,58 +13,62 @@
 - **智慧名稱翻譯**：將深奧的內部 ID（如 `gemini-3-pro-high`）翻譯為直覺的名稱（如 `Gemini 3 Pro (High)`）。
 - **自動 Session 續期**：內建 OAuth 2.0 Token 自動刷新機制，登入一次後即可長期使用。
 
-## 🛠️ 使用方法
+## 🛠️ 安裝與使用 (Installation)
 
-### 1. 安裝與環境準備
-確保您的環境已安裝 [Bun](https://bun.com)。
-
+### 方式 A：使用 npx (免安裝，推薦)
+如果您只想快速查看狀態，無需安裝任何東西：
 ```bash
-cd D:/g-monitor
-bun install
-bun run build
+npx @zxjte9411/g-monitor status --tui
 ```
 
-### 2. 登入驗證
-使用 Google 帳號進行授權並自動偵測 GCP 專案：
+### 方式 B：全域安裝 (NPM)
+如果您想長期使用：
 ```bash
-bun run src/index.ts login
+npm install -g @zxjte9411/g-monitor
+
+# 登入驗證 (只需一次)
+g-monitor login
+
+# 啟動 TUI 儀表板
+g-monitor status --tui
+```
+
+### 方式 C：本地開發 (Bun)
+如果您想貢獻程式碼或修改功能：
+```bash
+git clone https://github.com/zxjte9411/g-monitor.git
+cd g-monitor
+bun install
+bun run build
+bun run src/index.ts status --tui
+```
+
+## 🎮 操作指南
+
+### 1. 登入 (Login)
+```bash
+g-monitor login
 ```
 *登入後會自動識別您的 Email 並將其設為活躍帳號。*
 
-### 3. 多帳號管理
+### 2. 多帳號管理 (Multi-Account)
 ```bash
 # 列出所有已登入帳號
-bun run src/index.ts account list
+g-monitor account list
 
 # 切換到特定帳號
-bun run src/index.ts account use user@example.com
+g-monitor account use user@example.com
 
 # 移除帳號
-bun run src/index.ts account rm user@example.com
+g-monitor account rm user@example.com
 ```
 
-### 4. 查看狀態 (CLI 模式)
-顯示排序後的完整模型配額清單：
-```bash
-# 查看當前活躍帳號的所有環境配額
-bun run src/index.ts status
-
-# 一次查看所有登入帳號的配額 (Global View)
-bun run src/index.ts status --all
-
-# 只看 Production (24h) 配額池
-bun run src/index.ts status --prod
-
-# 只看 Daily Sandbox (5h) 配額池
-bun run src/index.ts status --daily
-```
-
-### 5. 互動式儀表板 (TUI 模式)
+### 3. TUI 儀表板 (Dashboard)
 啟動即時更新的監控介面：
 ```bash
-bun run src/index.ts status --tui
+g-monitor status --tui
 ```
-**TUI 快捷鍵：**
+**快捷鍵：**
 - `R`: 立即刷新 (Refresh)
 - `S`: 切換帳號 (Switch Account)
 - `F`: 切換過濾器 (Filter: All/Prod/Daily)
