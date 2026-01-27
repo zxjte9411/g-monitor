@@ -19,13 +19,16 @@ export const loginCommand = new Command('login')
 
       if (!options.manual) {
         const server = await startCallbackServer();
-        redirectUri = `http://127.0.0.1:${server.port}`;
-        const url = buildAuthUrl(challenge, redirectUri);
-        spinner.info(`Opening browser: ${url}`);
-        await open(url);
-        spinner.text = 'Waiting for callback...';
-        code = await server.waitForCode();
-        server.close();
+        try {
+          redirectUri = `http://127.0.0.1:${server.port}`;
+          const url = buildAuthUrl(challenge, redirectUri);
+          spinner.info(`Opening browser: ${url}`);
+          await open(url);
+          spinner.start('Waiting for callback...');
+          code = await server.waitForCode();
+        } finally {
+          server.close();
+        }
       } else {
         const url = buildAuthUrl(challenge, redirectUri);
         spinner.info(`Open this URL: ${url}`);
