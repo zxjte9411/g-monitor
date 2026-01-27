@@ -9,6 +9,9 @@ export interface QuotaData {
     limit: number;
     resetTime?: string;
     source: 'Prod' | 'Daily';
+    poolLabel: string;
+    remainingFraction: number;
+    displayName: string;
 }
 
 interface Props {

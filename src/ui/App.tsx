@@ -136,10 +136,10 @@ export const App: React.FC = () => {
         data.forEach(res => {
             if (res.data?.buckets) {
                 const identityMap: Record<string, string> = {
-                    'antigravity': 'VSCode',
+                    'antigravity': 'Antigravity',
                     'gemini-cli': 'CLI'
                 };
-                const poolLabel = `(${res.source}/${identityMap[res.identity] || res.identity})`;
+                const poolLabel = `${res.source}/${identityMap[res.identity] || res.identity}`;
 
                 res.data.buckets.forEach(bucket => {
                     if (!bucket.modelId) return;
@@ -152,11 +152,14 @@ export const App: React.FC = () => {
                     if (bucket.modelId === 'gemini-3-flash') displayName = 'Gemini 3 Flash Preview';
 
                     quotaItems.push({
-                        name: `${displayName} (${poolLabel})`,
+                        name: `${displayName} [${poolLabel}]`,
                         remaining: Math.round(bucket.remainingFraction * 100),
                         limit: 100,
                         resetTime: bucket.resetTime,
-                        source: res.source
+                        source: res.source,
+                        poolLabel,
+                        remainingFraction: bucket.remainingFraction,
+                        displayName
                     });
                 });
             }
