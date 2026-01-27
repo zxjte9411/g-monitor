@@ -1,5 +1,5 @@
-const CLIENT_ID = '681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com';
-const CLIENT_SECRET = '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';
+const CLIENT_ID = '1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com';
+const CLIENT_SECRET = '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';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
 export async function exchangeCode(code: string, verifier: string, redirectUri: string) {
@@ -24,6 +24,30 @@ export async function exchangeCode(code: string, verifier: string, redirectUri: 
     return {
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
+        expiresAt: Date.now() + data.expires_in * 1000
+    };
+}
+
+export async function refreshTokens(refreshToken: string) {
+    const params = new URLSearchParams({
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token'
+    });
+
+    const res = await fetch(TOKEN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+    });
+
+    if (!res.ok) throw new Error(`Token refresh failed: ${await res.text()}`);
+    
+    const data = (await res.json()) as { access_token: string; refresh_token?: string; expires_in: number };
+    return {
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token || refreshToken,
         expiresAt: Date.now() + data.expires_in * 1000
     };
 }

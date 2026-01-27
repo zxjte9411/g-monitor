@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import { InternalClient } from '../api/internal.js';
 import { configStore } from '../store/config.js';
 import { formatResetTime } from '../ui/formatters.js';
+import { refreshTokens } from '../auth/exchange.js';
 import Table from 'cli-table3';
 import ora from 'ora';
 import chalk from 'chalk';
@@ -14,9 +15,12 @@ interface ModelInfo {
 }
 
 export const statusCommand = new Command('status')
-    .description('Show quota status')
-    .action(async () => {
-        const tokens = configStore.getTokens();
+    .description('Show quota status across all environments')
+    .option('-d, --debug', 'Show raw API response for debugging')
+    .option('--prod', 'Show only Production pool')
+    .option('--daily', 'Show only Daily Sandbox pool')
+    .action(async (options) => {
+        let tokens = configStore.getTokens();
         const projectId = configStore.getProjectId();
 
         if (!tokens || !projectId) {
@@ -24,53 +28,101 @@ export const statusCommand = new Command('status')
             return;
         }
 
-        const spinner = ora('Fetching unified quotas...').start();
+        const spinner = ora('Checking session...').start();
+        
         try {
+            // 1. Auto-Refresh Logic: If token expired or expiring in < 5 mins, refresh it
+            const isExpired = Date.now() > (tokens.expiresAt - 5 * 60 * 1000);
+            if (isExpired) {
+                spinner.text = 'Refreshing session...';
+                try {
+                    const newTokens = await refreshTokens(tokens.refreshToken);
+                    configStore.setTokens(newTokens);
+                    tokens = newTokens;
+                    spinner.succeed('Session refreshed.');
+                    spinner.start('Performing Global Quota Sweep...');
+                } catch (refreshErr: any) {
+                    spinner.fail(chalk.red(`Session expired and refresh failed. Please "login" again.`));
+                    if (options.debug) console.error(refreshErr);
+                    return;
+                }
+            } else {
+                spinner.text = 'Performing Global Quota Sweep...';
+            }
+
             const client = new InternalClient(tokens.accessToken);
             
-            // Simultaneously fetch from both endpoints to capture regular and preview models
-            const [modelsData, quotaData]: [any, any] = await Promise.all([
-                client.fetchAvailableModels(projectId),
-                client.retrieveUserQuota(projectId)
-            ]);
+            // Sweep all combinations of [Prod, Daily] x [Antigravity, GeminiCLI]
+            const sweepResults = await client.sweepQuotas(projectId);
             
             spinner.stop();
 
-            const modelMap = new Map<string, ModelInfo>();
-
-            // 1. Process standard models list for display names
-            const internalModels = modelsData.models || {};
-            for (const key in internalModels) {
-                const m = internalModels[key];
-                modelMap.set(key, {
-                    id: key,
-                    displayName: m.displayName || key,
-                    remainingFraction: m.quotaInfo?.remainingFraction,
-                    resetTime: m.quotaInfo?.resetTime
-                });
+            if (options.debug) {
+                console.log(chalk.yellow('\n--- DEBUG: Sweep Results ---'));
+                console.log(JSON.stringify(sweepResults, null, 2));
+                console.log(chalk.yellow('--- END DEBUG ---\n'));
             }
 
-            // 2. Process quota buckets (captures preview models)
-            const buckets = quotaData.buckets || [];
-            for (const bucket of buckets) {
-                if (!bucket.modelId) continue;
-                
-                const existing = modelMap.get(bucket.modelId);
-                modelMap.set(bucket.modelId, {
-                    id: bucket.modelId,
-                    displayName: existing?.displayName || bucket.modelId,
-                    remainingFraction: bucket.remainingFraction,
-                    resetTime: bucket.resetTime
-                });
+            const modelMap = new Map<string, ModelInfo>();
+
+            // 1. First pass: Collect all display names from all sources
+            for (const res of sweepResults) {
+                if ((res as any).modelNames) {
+                    const models = (res as any).modelNames;
+                    for (const id in models) {
+                        const existing = modelMap.get(id);
+                        if (!existing || existing.displayName === id) {
+                            modelMap.set(id, {
+                                id,
+                                displayName: models[id].displayName || id
+                            });
+                        }
+                    }
+                }
+            }
+
+            // 2. Second pass: Collect and merge all quota buckets
+            for (const res of sweepResults) {
+                if ((res as any).data?.buckets) {
+                    const buckets = (res as any).data.buckets;
+                    const source = (res as any).source;
+
+                    // Apply filters if specified
+                    if (options.prod && source !== 'Prod') continue;
+                    if (options.daily && source !== 'Daily') continue;
+
+                    for (const bucket of buckets) {
+                        if (!bucket.modelId) continue;
+                        
+                        const id = bucket.modelId;
+                        const existing = modelMap.get(id);
+                        
+                        const uniqueKey = `${id}|${source}`;
+                        
+                        let displayName = existing?.displayName || id;
+                        if (id === 'gemini-3-pro-high') displayName = 'Gemini 3 Pro Preview (High)';
+                        if (id === 'gemini-3-pro-low') displayName = 'Gemini 3 Pro Preview (Low)';
+                        if (id === 'gemini-3-flash') displayName = 'Gemini 3 Flash Preview';
+
+                        modelMap.set(uniqueKey, {
+                            id,
+                            displayName: `${displayName} ${chalk.dim(`(${source})`)}`,
+                            remainingFraction: bucket.remainingFraction,
+                            resetTime: bucket.resetTime
+                        });
+                    }
+                }
             }
 
             // 3. Sort: Case-insensitive alphabetical sorting by display name
-            const sortedModels = Array.from(modelMap.values()).sort((a, b) => 
-                a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' })
-            );
+            const sortedModels = Array.from(modelMap.values())
+                .filter(m => m.remainingFraction !== undefined) // Only show items with quota info
+                .sort((a, b) => 
+                    a.displayName.localeCompare(b.displayName, undefined, { sensitivity: 'base' })
+                );
 
             const table = new Table({
-                head: [chalk.cyan('Model Name'), chalk.cyan('Remaining %'), chalk.cyan('Reset Time')],
+                head: [chalk.cyan('Model Name (Pool)'), chalk.cyan('Remaining %'), chalk.cyan('Reset Time')],
                 style: { head: [] }
             });
 
@@ -90,8 +142,13 @@ export const statusCommand = new Command('status')
             }
 
             console.log(table.toString());
+
+            // Improved summary
+            const successfulSources = Array.from(new Set(sweepResults.map((r: any) => `${r.source}/${r.identity}`)));
             console.log(chalk.dim(`\nProject: ${projectId}`));
+            console.log(chalk.dim(`Active Pools: ${successfulSources.join(', ')}`));
+            
         } catch (err: any) {
-            spinner.fail(chalk.red(`Failed to fetch quotas: ${err.message}`));
+            spinner.fail(chalk.red(`Sweep failed: ${err.message}`));
         }
     });
