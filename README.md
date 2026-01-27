@@ -7,6 +7,7 @@
 
 ## 🚀 主要用途
 - **全維度掃描 (Global Sweep)**：同時監控 Production (24h 重置) 與 Daily Sandbox (5h 重置) 兩大配額池。
+- **多帳號管理 (Multi-Account)**：支援同時登入個人與工作帳號，並可一鍵快速切換。
 - **身分偽裝 (Deep Impersonation)**：完美模擬官方身分以避開 Private API 403 報錯，並解鎖 `gemini-3-pro-preview` 等隱藏模型。
 - **智慧名稱翻譯**：將深奧的內部 ID（如 `gemini-3-pro-high`）翻譯為直覺的名稱（如 `Gemini 3 Pro Preview (High)`）。
 - **自動 Session 續期**：內建 OAuth 2.0 Token 自動刷新機制，登入一次後即可長期使用。
@@ -27,12 +28,28 @@ bun run build
 ```bash
 bun run src/index.ts login
 ```
+*登入後會自動識別您的 Email 並將其設為活躍帳號。*
 
-### 3. 查看狀態
+### 3. 多帳號管理
+```bash
+# 列出所有已登入帳號
+bun run src/index.ts account list
+
+# 切換到特定帳號
+bun run src/index.ts account use user@example.com
+
+# 移除帳號
+bun run src/index.ts account rm user@example.com
+```
+
+### 4. 查看狀態
 顯示排序後的完整模型配額清單：
 ```bash
-# 查看所有環境配額
+# 查看當前活躍帳號的所有環境配額
 bun run src/index.ts status
+
+# 一次查看所有登入帳號的配額 (Global View)
+bun run src/index.ts status --all
 
 # 只看 Production (24h) 配額池
 bun run src/index.ts status --prod
