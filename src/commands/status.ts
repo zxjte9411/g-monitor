@@ -132,9 +132,9 @@ async function processAccountStatus(account: any, options: any) {
                     const uniqueKey = `${id}|${source}`;
                     
                     let displayName = existing?.displayName || id;
-                    if (id === 'gemini-3-pro-high') displayName = 'Gemini 3 Pro Preview (High)';
-                    if (id === 'gemini-3-pro-low') displayName = 'Gemini 3 Pro Preview (Low)';
-                    if (id === 'gemini-3-flash') displayName = 'Gemini 3 Flash Preview';
+                    if (id === 'gemini-3-pro-high') displayName = 'Gemini 3 Pro (High)';
+                    if (id === 'gemini-3-pro-low') displayName = 'Gemini 3 Pro (Low)';
+                    if (id === 'gemini-3-flash') displayName = 'Gemini 3 Flash';
 
                     modelMap.set(uniqueKey, {
                         id,
