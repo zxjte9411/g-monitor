@@ -26,6 +26,7 @@ export const App: React.FC = () => {
     const { exit } = useApp();
     const [data, setData] = useState<SweepResult[]>([]);
     const [loading, setLoading] = useState(true);
+    const [sortMode, setSortMode] = useState<'name' | 'pool' | 'status'>('name');
     const [showAccountSwitcher, setShowAccountSwitcher] = useState(false);
     const [filter, setFilter] = useState<'all' | 'prod' | 'daily'>('all');
     const [scrollOffset, setScrollOffset] = useState(0);
@@ -98,6 +99,13 @@ export const App: React.FC = () => {
         if (input === 's') {
             setShowAccountSwitcher(current => !current);
         }
+        if (input === 'g') {
+            setSortMode(current => {
+                if (current === 'name') return 'pool';
+                if (current === 'pool') return 'status';
+                return 'name';
+            });
+        }
 
         const filteredDataLength = transformData().filter(item => {
             if (filter === 'all') return true;
@@ -165,8 +173,21 @@ export const App: React.FC = () => {
             }
         });
 
-        // Sort by name
-        return quotaItems.sort((a, b) => a.name.localeCompare(b.name));
+        // Sort logic
+        return quotaItems.sort((a, b) => {
+            if (sortMode === 'name') {
+                return a.name.localeCompare(b.name);
+            }
+            if (sortMode === 'pool') {
+                const poolComp = a.poolLabel.localeCompare(b.poolLabel);
+                return poolComp !== 0 ? poolComp : a.name.localeCompare(b.name);
+            }
+            if (sortMode === 'status') {
+                const statusComp = (a.remainingFraction || 0) - (b.remainingFraction || 0);
+                return statusComp !== 0 ? statusComp : a.name.localeCompare(b.name);
+            }
+            return 0;
+        });
     };
 
     if (showAccountSwitcher) {
