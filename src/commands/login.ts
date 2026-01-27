@@ -46,14 +46,30 @@ export const loginCommand = new Command('login')
 
       const client = new InternalClient(tokens.accessToken);
       spinner.text = 'Discovering project...';
-      const data = await client.loadCodeAssist();
-      const projectId = (data as any).cloudaicompanionProject?.id || (data as any).cloudaicompanionProject; // Handle both string and object
+      let data = await client.loadCodeAssist();
+      let projectId = (data as any).cloudaicompanionProject?.id || (data as any).cloudaicompanionProject;
+
+      // Deep Impersonation: If no project, try to onboard like Gemini-CLI
+      if (!projectId && (data as any).allowedTiers) {
+          spinner.text = 'Onboarding to Code Assist...';
+          const tier = (data as any).allowedTiers.find((t: any) => t.isDefault) || (data as any).allowedTiers[0];
+          if (tier) {
+              const onboardRes = await client.onboardUser(tier.id);
+              // Simple wait for LRO
+              if (onboardRes.name) {
+                  spinner.text = 'Waiting for onboarding to complete...';
+                  await new Promise(resolve => setTimeout(resolve, 3000));
+                  data = await client.loadCodeAssist();
+                  projectId = (data as any).cloudaicompanionProject?.id || (data as any).cloudaicompanionProject;
+              }
+          }
+      }
 
       if (projectId && typeof projectId === 'string') {
         configStore.setProjectId(projectId);
         spinner.succeed(`Connected to project: ${projectId}`);
       } else {
-        spinner.warn('No Code Assist project found. You might need to enable it in the GCP console or wait for onboarding.');
+        spinner.warn('No Code Assist project found. Please ensure "Cloud AI Companion API" is enabled in GCP.');
       }
     } catch (err: any) {
       spinner.fail(`Auth failed: ${err.message}`);

@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from 'vitest';
 global.fetch = vi.fn();
 
 describe('InternalClient', () => {
-  it('should inject headers', async () => {
+  it('should inject headers including User-Agent impersonation', async () => {
     (global.fetch as any).mockResolvedValue({ ok: true, json: () => ({}) });
     const client = new InternalClient('fake_token');
     await client.loadCodeAssist();
@@ -14,14 +14,14 @@ describe('InternalClient', () => {
         expect.objectContaining({
             headers: expect.objectContaining({
                 'X-Goog-Api-Client': 'google-cloud-sdk vscode_cloudshelleditor/0.1',
-                'User-Agent': 'antigravity',
+                'User-Agent': expect.stringContaining('GeminiCLI'),
                 'Authorization': 'Bearer fake_token'
             })
         })
     );
   });
 
-  it('should call retrieveUserQuota with correct path and body', async () => {
+  it('should inject X-Goog-User-Project when projectId is provided', async () => {
     (global.fetch as any).mockResolvedValue({ ok: true, json: () => ({}) });
     const client = new InternalClient('fake_token');
     await client.retrieveUserQuota('my-project');
@@ -29,6 +29,9 @@ describe('InternalClient', () => {
     expect(global.fetch).toHaveBeenCalledWith(
         expect.stringContaining('v1internal:retrieveUserQuota'),
         expect.objectContaining({
+            headers: expect.objectContaining({
+                'X-Goog-User-Project': 'my-project'
+            }),
             body: JSON.stringify({ project: 'my-project' })
         })
     );
