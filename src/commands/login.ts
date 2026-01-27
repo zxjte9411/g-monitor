@@ -7,6 +7,7 @@ import { startCallbackServer } from '../auth/server.js';
 import { exchangeCode } from '../auth/exchange.js';
 import { configStore } from '../store/config.js';
 import { InternalClient } from '../api/internal.js';
+import { decodeJwt } from '../utils/jwt.js';
 
 export const loginCommand = new Command('login')
   .description('Authenticate with Google')
@@ -42,7 +43,25 @@ export const loginCommand = new Command('login')
 
       spinner.text = 'Exchanging token...';
       const tokens = await exchangeCode(code, verifier, redirectUri);
-      configStore.setTokens(tokens);
+      
+      let email = 'default';
+      if (tokens.idToken) {
+        const decoded = decodeJwt(tokens.idToken);
+        if (decoded?.email) {
+          email = decoded.email;
+        }
+      }
+
+      configStore.addAccount({
+        email,
+        tokens,
+        projectId: '', // Will be updated during discovery
+      });
+      configStore.setActiveAccount(email);
+
+      if (email !== 'default') {
+        spinner.info(`Logged in as ${email}`);
+      }
 
       const client = new InternalClient(tokens.accessToken);
       spinner.text = 'Discovering project...';
