@@ -32,6 +32,7 @@ export const App: React.FC = () => {
     const [filter, setFilter] = useState<'all' | 'prod' | 'daily'>('all');
     const [scrollOffset, setScrollOffset] = useState(0);
     const [refreshInterval] = useState(60);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     useEffect(() => {
         setScrollOffset(0);
@@ -81,13 +82,14 @@ export const App: React.FC = () => {
         fetchData();
         const timer = setInterval(fetchData, refreshInterval * 1000);
         return () => clearInterval(timer);
-    }, [fetchData, refreshInterval]);
+    }, [fetchData, refreshInterval, refreshTrigger]);
 
     useInput((input, key) => {
         if (input === 'q') {
             exit();
         }
         if (input === 'r') {
+            setRefreshTrigger(t => t + 1);
             fetchData();
         }
         if (input === 'f') {
