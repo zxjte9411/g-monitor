@@ -40,18 +40,15 @@ export const QuotaTable: React.FC<Props> = ({ data, filter, viewMode = 'percent'
     });
 
     const visibleData = filteredData.slice(scrollOffset, scrollOffset + maxHeight);
-    const hasMoreAbove = scrollOffset > 0;
-    const hasMoreBelow = scrollOffset + maxHeight < filteredData.length;
+
+    const totalItems = filteredData.length;
+    const thumbHeight = Math.max(1, Math.floor((maxHeight / totalItems) * maxHeight));
+    const thumbTop = Math.floor((scrollOffset / totalItems) * maxHeight);
 
     return (
-        <Box flexDirection="column" paddingX={1}>
-            {hasMoreAbove && (
-                <Box justifyContent="center">
-                    <Text dimColor>▲</Text>
-                </Box>
-            )}
-
-            <Box flexDirection="row" borderStyle="single" borderColor="gray" paddingX={1}>
+        <Box flexDirection="row" paddingX={1}>
+            <Box flexGrow={1} flexDirection="column">
+                <Box flexDirection="row" borderStyle="single" borderColor="gray" paddingX={1}>
                 <Box flexBasis="50%">
                     <Text bold>Name</Text>
                 </Box>
@@ -100,9 +97,18 @@ export const QuotaTable: React.FC<Props> = ({ data, filter, viewMode = 'percent'
                 })
             )}
 
-            {hasMoreBelow && (
-                <Box justifyContent="center">
-                    <Text dimColor>▼</Text>
+            </Box>
+
+            {totalItems > maxHeight && (
+                <Box width={1} flexDirection="column" marginLeft={1} marginTop={3}>
+                    {Array.from({ length: maxHeight }).map((_, i) => {
+                        const isThumb = i >= thumbTop && i < thumbTop + thumbHeight;
+                        return (
+                            <Text key={i} color={isThumb ? 'cyan' : 'gray'} dimColor={!isThumb}>
+                                {isThumb ? '█' : '┃'}
+                            </Text>
+                        );
+                    })}
                 </Box>
             )}
         </Box>
