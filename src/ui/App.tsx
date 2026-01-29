@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Text, useInput, useApp } from 'ink';
+import { Box, Text, useInput, useApp, useStdout } from 'ink';
 import Spinner from 'ink-spinner';
 import { Header } from './components/Header.js';
 import { Footer } from './components/Footer.js';
@@ -24,6 +24,25 @@ interface SweepResult {
 
 export const App: React.FC = () => {
     const { exit } = useApp();
+    const { stdout } = useStdout();
+    const [windowHeight, setWindowHeight] = useState(stdout?.rows || 20);
+
+    useEffect(() => {
+        if (!stdout) return;
+        const onResize = () => {
+            setWindowHeight(stdout.rows);
+        };
+        stdout.on('resize', onResize);
+        return () => {
+            stdout.off('resize', onResize);
+        };
+    }, [stdout]);
+
+    const HEADER_HEIGHT = 4;
+    const FOOTER_HEIGHT = 3;
+    const MARGIN = 2;
+    const tableHeight = Math.max(5, windowHeight - HEADER_HEIGHT - FOOTER_HEIGHT - MARGIN);
+
     const [data, setData] = useState<SweepResult[]>([]);
     const [loading, setLoading] = useState(true);
     const [sortMode, setSortMode] = useState<'name' | 'pool' | 'status'>('name');
@@ -117,7 +136,7 @@ export const App: React.FC = () => {
             if (filter === 'all') return true;
             return item.source.toLowerCase() === filter;
         }).length;
-        const maxOffset = Math.max(0, filteredDataLength - 15);
+        const maxOffset = Math.max(0, filteredDataLength - tableHeight);
 
         if (key.downArrow) {
             setScrollOffset(prev => Math.min(maxOffset, prev + 1));
@@ -230,7 +249,7 @@ export const App: React.FC = () => {
                         filter={filter} 
                         viewMode={viewMode}
                         scrollOffset={scrollOffset} 
-                        maxHeight={15} 
+                        maxHeight={tableHeight} 
                     />
                 )}
             </Box>
