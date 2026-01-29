@@ -40,7 +40,7 @@ export const App: React.FC = () => {
 
     const HEADER_HEIGHT = 4;
     const FOOTER_HEIGHT = 3;
-    const MARGIN = 4;
+    const MARGIN = 6;
     const tableHeight = Math.max(5, windowHeight - HEADER_HEIGHT - FOOTER_HEIGHT - MARGIN);
 
     const [data, setData] = useState<SweepResult[]>([]);
