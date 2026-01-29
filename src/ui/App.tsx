@@ -29,6 +29,7 @@ export const App: React.FC = () => {
 
     useEffect(() => {
         if (!stdout) return;
+        setWindowHeight(stdout.rows);
         const onResize = () => {
             setWindowHeight(stdout.rows);
         };
@@ -36,7 +37,7 @@ export const App: React.FC = () => {
         return () => {
             stdout.off('resize', onResize);
         };
-    }, [stdout]);
+    }, [stdout, stdout?.rows]);
 
     const HEADER_HEIGHT = 4;
     const FOOTER_HEIGHT = 3;
