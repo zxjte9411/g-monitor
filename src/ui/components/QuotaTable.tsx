@@ -43,7 +43,9 @@ export const QuotaTable: React.FC<Props> = ({ data, filter, viewMode = 'percent'
 
     const totalItems = filteredData.length;
     const thumbHeight = Math.max(1, Math.floor((maxHeight / totalItems) * maxHeight));
-    const thumbTop = Math.floor((scrollOffset / totalItems) * maxHeight);
+    const maxScroll = Math.max(1, totalItems - maxHeight);
+    const trackSpace = maxHeight - thumbHeight;
+    const thumbTop = Math.floor((scrollOffset / maxScroll) * trackSpace);
 
     return (
         <Box flexDirection="row" paddingX={1}>
