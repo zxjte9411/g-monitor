@@ -239,7 +239,7 @@ export const App: React.FC = () => {
     }
 
     return (
-        <Box flexDirection="column" padding={1}>
+        <Box flexDirection="column" paddingX={1} paddingTop={1}>
             <Header refreshInterval={refreshInterval} lastUpdated={lastUpdated} />
             
             {error && (
