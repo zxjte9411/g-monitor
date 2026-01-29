@@ -140,10 +140,10 @@ export const App: React.FC = () => {
         const maxOffset = Math.max(0, filteredDataLength - tableHeight);
 
         if (key.downArrow) {
-            setScrollOffset(prev => Math.min(maxOffset, prev + 1));
+            setScrollOffset(prev => Math.min(maxOffset, prev + 3));
         }
         if (key.upArrow) {
-            setScrollOffset(prev => Math.max(0, prev - 1));
+            setScrollOffset(prev => Math.max(0, prev - 3));
         }
         if (key.pageDown) {
             setScrollOffset(prev => Math.min(maxOffset, prev + tableHeight));
