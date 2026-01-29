@@ -31,7 +31,7 @@ export const statusCommand = new Command('status')
                 console.error(chalk.red('No active account found. Run "login" first.'));
                 return;
             }
-            render(React.createElement(App), { altScreenBuffer: true } as any);
+            render(React.createElement(App));
             return;
         }
 
