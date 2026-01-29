@@ -144,6 +144,18 @@ export const App: React.FC = () => {
         if (key.upArrow) {
             setScrollOffset(prev => Math.max(0, prev - 1));
         }
+        if (key.pageDown) {
+            setScrollOffset(prev => Math.min(maxOffset, prev + tableHeight));
+        }
+        if (key.pageUp) {
+            setScrollOffset(prev => Math.max(0, prev - tableHeight));
+        }
+        if (key.home) {
+            setScrollOffset(0);
+        }
+        if (key.end) {
+            setScrollOffset(maxOffset);
+        }
     });
 
     const handleAccountSelect = (email: string) => {
