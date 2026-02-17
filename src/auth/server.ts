@@ -23,12 +23,20 @@ export function startCallbackServer(): Promise<CallbackServer> {
       const url = new URL(req.url || '', `http://localhost:${(server.address() as any).port}`);
       const code = url.searchParams.get('code');
       const state = url.searchParams.get('state');
+      const error = url.searchParams.get('error');
+
+      if (error) {
+        res.end(`Authentication failed: ${error}. You can close this window.`);
+        rejectCode(new Error(`Authentication failed: ${error}`));
+        return;
+      }
       
       if (code) {
         res.end('Authentication successful! You can close this window.');
         resolveCode({ code, state });
       } else {
-        res.end('No code found.');
+        res.end('Authentication failed: No code found in response. You can close this window.');
+        rejectCode(new Error('No code found in callback URL'));
       }
     });
 
