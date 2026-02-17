@@ -1,9 +1,10 @@
 import Conf from 'conf';
 
-interface Tokens {
+export interface Tokens {
   accessToken: string;
   refreshToken: string;
   expiresAt: number;
+  idToken?: string;
 }
 
 export interface Account {

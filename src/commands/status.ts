@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import { InternalClient } from '../api/internal.js';
 import { configStore } from '../store/config.js';
 import { formatResetTime } from '../ui/formatters.js';
-import { refreshTokens } from '../auth/exchange.js';
+import { isTokenExpiring, ensureValidTokens } from '../auth/token-manager.js';
 import Table from 'cli-table3';
 import ora from 'ora';
 import chalk from 'chalk';
@@ -62,15 +62,10 @@ async function processAccountStatus(account: any, options: any) {
     
     try {
         // 1. Auto-Refresh Logic: If token expired or expiring in < 5 mins, refresh it
-        const isExpired = Date.now() > (tokens.expiresAt - 5 * 60 * 1000);
-        if (isExpired) {
+        if (isTokenExpiring(tokens)) {
             spinner.text = 'Refreshing session...';
             try {
-                const newTokens = await refreshTokens(tokens.refreshToken);
-                // Update tokens in the account object and save back to store
-                account.tokens = newTokens;
-                configStore.addAccount(account);
-                tokens = newTokens;
+                tokens = await ensureValidTokens(account);
                 spinner.succeed('Session refreshed.');
                 spinner.start('Performing Global Quota Sweep...');
             } catch (refreshErr: any) {

@@ -7,7 +7,7 @@ import { QuotaTable, QuotaData } from './components/QuotaTable.js';
 import { AccountSwitcher } from './components/AccountSwitcher.js';
 import { InternalClient } from '../api/internal.js';
 import { configStore } from '../store/config.js';
-import { refreshTokens } from '../auth/exchange.js';
+import { ensureValidTokens } from '../auth/token-manager.js';
 
 interface SweepResult {
     source: 'Prod' | 'Daily';
@@ -72,19 +72,12 @@ export const App: React.FC = () => {
             }
 
             let tokens = account.tokens;
-            const isExpired = Date.now() > (tokens.expiresAt - 5 * 60 * 1000);
-            
-            if (isExpired) {
-                try {
-                    const newTokens = await refreshTokens(tokens.refreshToken);
-                    account.tokens = newTokens;
-                    configStore.addAccount(account);
-                    tokens = newTokens;
-                } catch (refreshErr) {
-                    setError('Session expired and refresh failed. Please login again.');
-                    setLoading(false);
-                    return;
-                }
+            try {
+                tokens = await ensureValidTokens(account);
+            } catch (refreshErr) {
+                setError('Session expired and refresh failed. Please login again.');
+                setLoading(false);
+                return;
             }
 
             const client = new InternalClient(tokens.accessToken);
