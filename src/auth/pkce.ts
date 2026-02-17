@@ -5,7 +5,7 @@ export interface PKCEPair {
   challenge: string;
 }
 
-function base64URLEncode(buffer: Buffer): string {
+export function base64URLEncode(buffer: Buffer): string {
   return buffer.toString('base64')
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
@@ -18,4 +18,8 @@ export function generatePKCE(): PKCEPair {
   const challenge = base64URLEncode(challengeBuffer);
   
   return { verifier, challenge };
+}
+
+export function generateState(): string {
+  return base64URLEncode(randomBytes(32));
 }

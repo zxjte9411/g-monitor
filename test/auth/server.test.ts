@@ -9,4 +9,25 @@ describe('Callback Server', () => {
     expect(server.close).toBeDefined();
     server.close();
   });
+
+  it('should extract code and state from callback', async () => {
+    const server = await startCallbackServer();
+    const port = server.port;
+
+    const waitForCodePromise = server.waitForCode();
+
+    // Simulate a callback from Google
+    await new Promise((resolve, reject) => {
+        http.get(`http://127.0.0.1:${port}/?code=test_code&state=test_state`, (res) => {
+            res.on('data', () => {});
+            res.on('end', resolve);
+        }).on('error', reject);
+    });
+
+    const result = await waitForCodePromise;
+    expect(result.code).toBe('test_code');
+    expect(result.state).toBe('test_state');
+
+    server.close();
+  });
 });
