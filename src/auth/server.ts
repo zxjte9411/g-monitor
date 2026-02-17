@@ -21,6 +21,13 @@ export function startCallbackServer(): Promise<CallbackServer> {
 
     server.on('request', (req, res) => {
       const url = new URL(req.url || '', `http://localhost:${(server.address() as any).port}`);
+
+      if (url.pathname !== '/') {
+        res.statusCode = 404;
+        res.end();
+        return;
+      }
+
       const code = url.searchParams.get('code');
       const state = url.searchParams.get('state');
       const error = url.searchParams.get('error');

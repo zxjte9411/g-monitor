@@ -64,4 +64,30 @@ describe('Callback Server', () => {
         await expect(waitForCodePromise).rejects.toThrow('No code found in callback URL');
         server.close();
     });
+
+    it('should ignore requests to non-root paths', async () => {
+        const server = await startCallbackServer();
+        const port = server.port;
+        const waitForCodePromise = server.waitForCode();
+
+        await new Promise((resolve, reject) => {
+            http.get(`http://127.0.0.1:${port}/favicon.ico`, (res) => {
+                expect(res.statusCode).toBe(404);
+                res.on('data', () => {});
+                res.on('end', resolve);
+            }).on('error', reject);
+        });
+
+        await new Promise((resolve) => setTimeout(resolve, 30));
+
+        await new Promise((resolve, reject) => {
+            http.get(`http://127.0.0.1:${port}/?code=test_code&state=test_state`, (res) => {
+                res.on('data', () => {});
+                res.on('end', resolve);
+            }).on('error', reject);
+        });
+
+        await expect(waitForCodePromise).resolves.toEqual({ code: 'test_code', state: 'test_state' });
+        server.close();
+    });
 });
