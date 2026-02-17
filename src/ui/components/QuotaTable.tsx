@@ -16,13 +16,12 @@ export interface QuotaData {
 
 interface Props {
     data: QuotaData[];
-    filter: 'all' | 'prod' | 'daily';
     viewMode?: 'percent' | 'bar';
     scrollOffset?: number;
     maxHeight?: number;
 }
 
-export const QuotaTable: React.FC<Props> = ({ data, filter, viewMode = 'percent', scrollOffset = 0, maxHeight = 15 }) => {
+export const QuotaTable: React.FC<Props> = ({ data, viewMode = 'percent', scrollOffset = 0, maxHeight = 15 }) => {
     const renderProgressBar = (percentage: number, color: string) => {
         const width = 10;
         const filledChars = Math.round((percentage / 100) * width);
@@ -34,14 +33,9 @@ export const QuotaTable: React.FC<Props> = ({ data, filter, viewMode = 'percent'
         );
     };
 
-    const filteredData = data.filter(item => {
-        if (filter === 'all') return true;
-        return item.source.toLowerCase() === filter;
-    });
+    const visibleData = data.slice(scrollOffset, scrollOffset + maxHeight);
 
-    const visibleData = filteredData.slice(scrollOffset, scrollOffset + maxHeight);
-
-    const totalItems = filteredData.length;
+    const totalItems = data.length;
     const thumbHeight = Math.max(1, Math.floor((maxHeight / totalItems) * maxHeight));
     const maxScroll = Math.max(1, totalItems - maxHeight);
     const trackSpace = maxHeight - thumbHeight;
@@ -62,7 +56,7 @@ export const QuotaTable: React.FC<Props> = ({ data, filter, viewMode = 'percent'
                 </Box>
             </Box>
 
-            {filteredData.length === 0 ? (
+            {data.length === 0 ? (
                 <Box paddingY={1} justifyContent="center">
                     <Text dimColor>No quota data available</Text>
                 </Box>

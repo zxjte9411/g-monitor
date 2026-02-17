@@ -133,11 +133,7 @@ export const App: React.FC = () => {
             setViewMode(current => current === 'percent' ? 'bar' : 'percent');
         }
 
-        const filteredDataLength = transformedData.filter(item => {
-            if (filter === 'all') return true;
-            return item.source.toLowerCase() === filter;
-        }).length;
-        const maxOffset = Math.max(0, filteredDataLength - tableHeight);
+        const maxOffset = Math.max(0, filteredData.length - tableHeight);
 
         if (key.downArrow) {
             setScrollOffset(prev => Math.min(maxOffset, prev + 3));
@@ -228,6 +224,14 @@ export const App: React.FC = () => {
         });
     }, [data, sortMode]);
 
+    const filteredData = useMemo(() => {
+        if (filter === 'all') {
+            return transformedData;
+        }
+
+        return transformedData.filter(item => item.source.toLowerCase() === filter);
+    }, [transformedData, filter]);
+
     if (showAccountSwitcher) {
         const accounts = configStore.getAccounts().map(a => a.email);
         return (
@@ -258,8 +262,7 @@ export const App: React.FC = () => {
                     </Box>
                 ) : (
                     <QuotaTable 
-                        data={transformedData}
-                        filter={filter} 
+                        data={filteredData}
                         viewMode={viewMode}
                         scrollOffset={scrollOffset} 
                         maxHeight={tableHeight} 
