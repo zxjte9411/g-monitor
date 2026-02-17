@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { timingSafeEqual } from 'crypto';
 import open from 'open';
 import ora from 'ora';
 import { generatePKCE, generateState } from '../auth/pkce.js';
@@ -29,7 +30,9 @@ export const loginCommand = new Command('login')
           await open(url);
           spinner.start('Waiting for callback...');
           const result = await server.waitForCode();
-          if (result.state !== state) {
+          const expectedState = Buffer.from(state);
+          const receivedState = Buffer.from(result.state || '');
+          if (expectedState.length !== receivedState.length || !timingSafeEqual(expectedState, receivedState)) {
             throw new Error('State mismatch. Potential CSRF attack detected.');
           }
           code = result.code;
