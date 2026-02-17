@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Box, Text, useInput, useApp, useStdout } from 'ink';
 import Spinner from 'ink-spinner';
 import { Header } from './components/Header.js';
@@ -133,7 +133,7 @@ export const App: React.FC = () => {
             setViewMode(current => current === 'percent' ? 'bar' : 'percent');
         }
 
-        const filteredDataLength = transformData().filter(item => {
+        const filteredDataLength = transformedData.filter(item => {
             if (filter === 'all') return true;
             return item.source.toLowerCase() === filter;
         }).length;
@@ -166,7 +166,7 @@ export const App: React.FC = () => {
     };
 
     // Transform SweepResult[] to QuotaData[]
-    const transformData = (): QuotaData[] => {
+    const transformedData = useMemo((): QuotaData[] => {
         const modelMap = new Map<string, { displayName: string }>();
         
         // Collect model names
@@ -226,7 +226,7 @@ export const App: React.FC = () => {
             }
             return 0;
         });
-    };
+    }, [data, sortMode]);
 
     if (showAccountSwitcher) {
         const accounts = configStore.getAccounts().map(a => a.email);
@@ -258,7 +258,7 @@ export const App: React.FC = () => {
                     </Box>
                 ) : (
                     <QuotaTable 
-                        data={transformData()} 
+                        data={transformedData}
                         filter={filter} 
                         viewMode={viewMode}
                         scrollOffset={scrollOffset} 
