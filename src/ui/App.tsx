@@ -73,7 +73,12 @@ export const App: React.FC = () => {
 
             let tokens = account.tokens;
             try {
-                tokens = await ensureValidTokens(account);
+                const refreshedTokens = await ensureValidTokens(tokens);
+                if (refreshedTokens !== tokens) {
+                    account.tokens = refreshedTokens;
+                    configStore.addAccount(account);
+                    tokens = refreshedTokens;
+                }
             } catch (refreshErr) {
                 setError('Session expired and refresh failed. Please login again.');
                 setLoading(false);

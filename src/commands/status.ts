@@ -65,7 +65,10 @@ async function processAccountStatus(account: any, options: any) {
         if (isTokenExpiring(tokens)) {
             spinner.text = 'Refreshing session...';
             try {
-                tokens = await ensureValidTokens(account);
+                const refreshedTokens = await ensureValidTokens(tokens);
+                tokens = refreshedTokens;
+                account.tokens = refreshedTokens;
+                configStore.addAccount(account);
                 spinner.succeed('Session refreshed.');
                 spinner.start('Performing Global Quota Sweep...');
             } catch (refreshErr: any) {
