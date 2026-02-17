@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Box, Text, useInput, useApp, useStdout } from 'ink';
 import Spinner from 'ink-spinner';
 import { Header } from './components/Header.js';
@@ -131,11 +131,7 @@ export const App: React.FC = () => {
             setViewMode(current => current === 'percent' ? 'bar' : 'percent');
         }
 
-        const filteredDataLength = transformData().filter(item => {
-            if (filter === 'all') return true;
-            return item.source.toLowerCase() === filter;
-        }).length;
-        const maxOffset = Math.max(0, filteredDataLength - tableHeight);
+        const maxOffset = Math.max(0, filteredData.length - tableHeight);
 
         if (key.downArrow) {
             setScrollOffset(prev => Math.min(maxOffset, prev + 3));
@@ -164,7 +160,7 @@ export const App: React.FC = () => {
     };
 
     // Transform SweepResult[] to QuotaData[]
-    const transformData = (): QuotaData[] => {
+    const transformedData = useMemo((): QuotaData[] => {
         const modelMap = new Map<string, { displayName: string }>();
         
         // Collect model names
@@ -224,7 +220,15 @@ export const App: React.FC = () => {
             }
             return 0;
         });
-    };
+    }, [data, sortMode]);
+
+    const filteredData = useMemo(() => {
+        if (filter === 'all') {
+            return transformedData;
+        }
+
+        return transformedData.filter(item => item.source.toLowerCase() === filter);
+    }, [transformedData, filter]);
 
     if (showAccountSwitcher) {
         const accounts = configStore.getAccounts().map(a => a.email);
@@ -256,8 +260,7 @@ export const App: React.FC = () => {
                     </Box>
                 ) : (
                     <QuotaTable 
-                        data={transformData()} 
-                        filter={filter} 
+                        data={filteredData}
                         viewMode={viewMode}
                         scrollOffset={scrollOffset} 
                         maxHeight={tableHeight} 
