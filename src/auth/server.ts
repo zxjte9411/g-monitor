@@ -19,8 +19,17 @@ export function startCallbackServer(): Promise<CallbackServer> {
       rejectCode = rej;
     });
 
+    const getServerPort = (): number => {
+      const address = server.address();
+      if (!address || typeof address === 'string') {
+        throw new Error('Callback server is not listening on a TCP port');
+      }
+
+      return address.port;
+    };
+
     server.on('request', (req, res) => {
-      const url = new URL(req.url || '', `http://localhost:${(server.address() as any).port}`);
+      const url = new URL(req.url || '', `http://localhost:${getServerPort()}`);
 
       if (url.pathname !== '/') {
         res.statusCode = 404;
@@ -48,7 +57,7 @@ export function startCallbackServer(): Promise<CallbackServer> {
     });
 
     server.listen(0, '127.0.0.1', () => {
-      const port = (server.address() as any).port;
+      const port = getServerPort();
       resolve({
         port,
         waitForCode: () => codePromise,
