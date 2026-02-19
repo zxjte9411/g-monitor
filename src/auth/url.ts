@@ -8,12 +8,13 @@ const SCOPES = [
     'openid'
 ];
 
-export function buildAuthUrl(challenge: string, redirectUri: string): string {
+export function buildAuthUrl(challenge: string, redirectUri: string, state: string): string {
     const params = new URLSearchParams({
         client_id: CLIENT_ID,
         redirect_uri: redirectUri,
         response_type: 'code',
         scope: SCOPES.join(' '),
+        state: state,
         code_challenge: challenge,
         code_challenge_method: 'S256',
         access_type: 'offline',

@@ -1,7 +1,8 @@
 import { Command } from 'commander';
+import { timingSafeEqual } from 'crypto';
 import open from 'open';
 import ora from 'ora';
-import { generatePKCE } from '../auth/pkce.js';
+import { generatePKCE, generateState } from '../auth/pkce.js';
 import { buildAuthUrl } from '../auth/url.js';
 import { startCallbackServer } from '../auth/server.js';
 import { exchangeCode } from '../auth/exchange.js';
@@ -19,20 +20,27 @@ export const loginCommand = new Command('login')
       let redirectUri = 'urn:ietf:wg:oauth:2.0:oob';
       let code: string = '';
 
+      const state = generateState();
       if (!options.manual) {
         const server = await startCallbackServer();
         try {
           redirectUri = `http://127.0.0.1:${server.port}`;
-          const url = buildAuthUrl(challenge, redirectUri);
+          const url = buildAuthUrl(challenge, redirectUri, state);
           spinner.info(`Opening browser: ${url}`);
           await open(url);
           spinner.start('Waiting for callback...');
-          code = await server.waitForCode();
+          const result = await server.waitForCode();
+          const expectedState = Buffer.from(state);
+          const receivedState = Buffer.from(result.state || '');
+          if (expectedState.length !== receivedState.length || !timingSafeEqual(expectedState, receivedState)) {
+            throw new Error('State mismatch. Potential CSRF attack detected.');
+          }
+          code = result.code;
         } finally {
           server.close();
         }
       } else {
-        const url = buildAuthUrl(challenge, redirectUri);
+        const url = buildAuthUrl(challenge, redirectUri, state);
         spinner.info(`Open this URL: ${url}`);
         // Manual mode logic - simpler version for now
         console.log('\nCopy the code from the browser and paste it here:');

@@ -19,3 +19,7 @@ export function generatePKCE(): PKCEPair {
   
   return { verifier, challenge };
 }
+
+export function generateState(): string {
+  return base64URLEncode(randomBytes(32));
+}
