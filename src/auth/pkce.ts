@@ -5,7 +5,7 @@ export interface PKCEPair {
   challenge: string;
 }
 
-export function base64URLEncode(buffer: Buffer): string {
+function base64URLEncode(buffer: Buffer): string {
   return buffer.toString('base64')
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
