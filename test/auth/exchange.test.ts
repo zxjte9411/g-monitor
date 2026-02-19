@@ -5,7 +5,7 @@ global.fetch = vi.fn();
 
 describe('Token Exchange', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        (global.fetch as vi.Mock).mockReset();
     });
 
     describe('exchangeCode', () => {
