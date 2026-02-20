@@ -29,6 +29,16 @@ describe('Token Exchange', () => {
             await expect(exchangeCode('code_123', 'verifier_123', 'http://localhost:1234'))
                 .rejects.toThrow('Token exchange failed: Invalid code');
         });
+
+        it('should throw error when token exchange response is missing access_token', async () => {
+            (global.fetch as vi.Mock).mockResolvedValue({
+                ok: true,
+                json: async () => ({ refresh_token: 'ref', expires_in: 3600 })
+            });
+
+            await expect(exchangeCode('code_123', 'verifier_123', 'http://localhost:1234'))
+                .rejects.toThrow('Token exchange failed: Invalid token response (missing access_token)');
+        });
     });
 
     describe('refreshTokens', () => {
@@ -51,6 +61,16 @@ describe('Token Exchange', () => {
 
             await expect(refreshTokens('old_ref'))
                 .rejects.toThrow('Token refresh failed: Invalid refresh token');
+        });
+
+        it('should throw error when token refresh response is missing access_token', async () => {
+            (global.fetch as vi.Mock).mockResolvedValue({
+                ok: true,
+                json: async () => ({ refresh_token: 'new_ref', expires_in: 3600 })
+            });
+
+            await expect(refreshTokens('old_ref'))
+                .rejects.toThrow('Token refresh failed: Invalid token response (missing access_token)');
         });
     });
 });
