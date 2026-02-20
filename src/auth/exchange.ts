@@ -2,6 +2,38 @@ const CLIENT_ID = '1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleuse
 const CLIENT_SECRET = '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';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
+type TokenResponse = {
+    access_token?: string;
+    refresh_token?: string;
+    expires_in?: number;
+    id_token?: string;
+};
+
+type ValidTokenResponse = TokenResponse & {
+    access_token: string;
+    expires_in: number;
+};
+
+type ValidExchangeTokenResponse = ValidTokenResponse & {
+    refresh_token: string;
+};
+
+function assertValidTokenResponse(data: TokenResponse, action: 'exchange'): asserts data is ValidExchangeTokenResponse;
+function assertValidTokenResponse(data: TokenResponse, action: 'refresh'): asserts data is ValidTokenResponse;
+function assertValidTokenResponse(data: TokenResponse, action: 'exchange' | 'refresh'): asserts data is ValidTokenResponse {
+    if (!data.access_token || typeof data.access_token !== 'string') {
+        throw new Error(`Token ${action} failed: Invalid token response (missing access_token)`);
+    }
+
+    if (typeof data.expires_in !== 'number') {
+        throw new Error(`Token ${action} failed: Invalid token response (missing expires_in)`);
+    }
+
+    if (action === 'exchange' && (!data.refresh_token || typeof data.refresh_token !== 'string')) {
+        throw new Error('Token exchange failed: Invalid token response (missing refresh_token)');
+    }
+}
+
 export async function exchangeCode(code: string, verifier: string, redirectUri: string) {
     const params = new URLSearchParams({
         client_id: CLIENT_ID,
@@ -20,12 +52,9 @@ export async function exchangeCode(code: string, verifier: string, redirectUri: 
 
     if (!res.ok) throw new Error(`Token exchange failed: ${await res.text()}`);
     
-    const data = (await res.json()) as { 
-        access_token: string; 
-        refresh_token: string; 
-        expires_in: number;
-        id_token?: string;
-    };
+    const data = (await res.json()) as TokenResponse;
+    assertValidTokenResponse(data, 'exchange');
+
     return {
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
@@ -50,12 +79,9 @@ export async function refreshTokens(refreshToken: string) {
 
     if (!res.ok) throw new Error(`Token refresh failed: ${await res.text()}`);
     
-    const data = (await res.json()) as { 
-        access_token: string; 
-        refresh_token?: string; 
-        expires_in: number;
-        id_token?: string;
-    };
+    const data = (await res.json()) as TokenResponse;
+    assertValidTokenResponse(data, 'refresh');
+
     return {
         accessToken: data.access_token,
         refreshToken: data.refresh_token || refreshToken,
