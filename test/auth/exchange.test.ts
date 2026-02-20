@@ -72,5 +72,15 @@ describe('Token Exchange', () => {
             await expect(refreshTokens('old_ref'))
                 .rejects.toThrow('Token refresh failed: Invalid token response (missing access_token)');
         });
+
+        it('should throw error when token refresh response is missing expires_in', async () => {
+            (global.fetch as vi.Mock).mockResolvedValue({
+                ok: true,
+                json: async () => ({ access_token: 'new_acc', refresh_token: 'new_ref' })
+            });
+
+            await expect(refreshTokens('old_ref'))
+                .rejects.toThrow('Token refresh failed: Invalid token response (missing expires_in)');
+        });
     });
 });
