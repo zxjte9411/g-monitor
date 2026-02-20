@@ -14,6 +14,12 @@ type ValidTokenResponse = TokenResponse & {
     expires_in: number;
 };
 
+type ValidExchangeTokenResponse = ValidTokenResponse & {
+    refresh_token: string;
+};
+
+function assertValidTokenResponse(data: TokenResponse, action: 'exchange'): asserts data is ValidExchangeTokenResponse;
+function assertValidTokenResponse(data: TokenResponse, action: 'refresh'): asserts data is ValidTokenResponse;
 function assertValidTokenResponse(data: TokenResponse, action: 'exchange' | 'refresh'): asserts data is ValidTokenResponse {
     if (!data.access_token || typeof data.access_token !== 'string') {
         throw new Error(`Token ${action} failed: Invalid token response (missing access_token)`);
@@ -21,6 +27,10 @@ function assertValidTokenResponse(data: TokenResponse, action: 'exchange' | 'ref
 
     if (typeof data.expires_in !== 'number') {
         throw new Error(`Token ${action} failed: Invalid token response (missing expires_in)`);
+    }
+
+    if (action === 'exchange' && (!data.refresh_token || typeof data.refresh_token !== 'string')) {
+        throw new Error('Token exchange failed: Invalid token response (missing refresh_token)');
     }
 }
 
@@ -44,10 +54,6 @@ export async function exchangeCode(code: string, verifier: string, redirectUri: 
     
     const data = (await res.json()) as TokenResponse;
     assertValidTokenResponse(data, 'exchange');
-
-    if (!data.refresh_token || typeof data.refresh_token !== 'string') {
-        throw new Error('Token exchange failed: Invalid token response (missing refresh_token)');
-    }
 
     return {
         accessToken: data.access_token,
